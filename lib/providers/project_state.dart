@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/annotation_model.dart';
 import '../models/video_metadata.dart';
@@ -11,16 +12,34 @@ class ProjectState extends ChangeNotifier {
   String? currentFolderPath;
   List<VideoMetadata> videos = [];
   Map<String, GlossData> annotations = {}; // key: gloss name
+  Set<String> completedVideos = {}; // marked as done
 
-  // Loading state
   bool isLoading = false;
   String? errorMessage;
 
+  static const _lastFolderKey = 'last_folder_path';
+
+  /// init and load last opened folder
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPath = prefs.getString(_lastFolderKey);
+    if (savedPath != null && Directory(savedPath).existsSync()) {
+      setFolderPath(savedPath);
+    }
+  }
+
   void setFolderPath(String path) {
     currentFolderPath = path;
+    _saveLastFolder(path);
     _scanFolder();
-    _loadAnnotations(); // try to load existing annotations
+    _loadAnnotations();
+    _loadProgress();
     notifyListeners();
+  }
+
+  Future<void> _saveLastFolder(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_lastFolderKey, path);
   }
 
   Future<void> _scanFolder() async {
@@ -62,15 +81,47 @@ class ProjectState extends ChangeNotifier {
     if (await file.exists()) {
       try {
         final jsonString = await file.readAsString();
-        final List<dynamic> jsonList = jsonDecode(jsonString);
+        final dynamic jsonData = jsonDecode(jsonString);
+
         annotations.clear();
-        for (var item in jsonList) {
-          final glossData = GlossData.fromJson(item);
-          annotations[glossData.gloss] = glossData;
+
+        // handle both new format (with 'glosses' key) and legacy format (direct list)
+        if (jsonData is Map && jsonData['glosses'] != null) {
+          for (var item in jsonData['glosses']) {
+            final glossData = GlossData.fromJson(item);
+            annotations[glossData.gloss] = glossData;
+          }
+        } else if (jsonData is List) {
+          // legacy format: direct list of glosses
+          for (var item in jsonData) {
+            final glossData = GlossData.fromJson(item);
+            annotations[glossData.gloss] = glossData;
+          }
         }
+
         notifyListeners();
       } catch (e) {
         debugPrint("Error loading annotations: $e");
+      }
+    }
+  }
+
+  Future<void> _loadProgress() async {
+    if (currentFolderPath == null) return;
+    final file = File(p.join(currentFolderPath!, 'progress.json'));
+    if (await file.exists()) {
+      try {
+        final jsonString = await file.readAsString();
+        final Map<String, dynamic> jsonData = jsonDecode(jsonString);
+
+        completedVideos.clear();
+        if (jsonData['completed_videos'] != null) {
+          completedVideos = Set<String>.from(jsonData['completed_videos']);
+        }
+
+        notifyListeners();
+      } catch (e) {
+        debugPrint("Error loading progress: $e");
       }
     }
   }
@@ -79,7 +130,21 @@ class ProjectState extends ChangeNotifier {
     if (currentFolderPath == null) return;
     final file = File(p.join(currentFolderPath!, 'annotations.json'));
     final jsonList = annotations.values.map((e) => e.toJson()).toList();
-    await file.writeAsString(jsonEncode(jsonList));
+    await file.writeAsString(
+      const JsonEncoder.withIndent('  ').convert(jsonList),
+    );
+  }
+
+  Future<void> _saveProgress() async {
+    if (currentFolderPath == null) return;
+    final file = File(p.join(currentFolderPath!, 'progress.json'));
+    final jsonData = {
+      'completed_videos': completedVideos.toList(),
+      'last_updated': DateTime.now().toIso8601String(),
+    };
+    await file.writeAsString(
+      const JsonEncoder.withIndent('  ').convert(jsonData),
+    );
   }
 
   void addInstance(String videoName, Instance instance) {
@@ -91,7 +156,7 @@ class ProjectState extends ChangeNotifier {
 
     annotations[gloss]!.instances.add(instance);
     notifyListeners();
-    saveAnnotations(); // auto save
+    saveAnnotations(); // auto-save
   }
 
   void removeInstance(String videoName, Instance instance) {
@@ -110,23 +175,50 @@ class ProjectState extends ChangeNotifier {
 
   String _extractGloss(String filename) {
     final name = p.basenameWithoutExtension(filename);
+
     final parts = name.split('_');
     if (parts.length > 1) {
       return parts.sublist(0, parts.length - 1).join('_');
     }
-    return name;
+    return name; // fallback
   }
 
   List<Instance> getInstancesForVideo(String videoName) {
+    //yeah this should be fineeee :p
     final List<Instance> result = [];
     for (var glossData in annotations.values) {
       for (var inst in glossData.instances) {
         // loose match
-        if (inst.url.endsWith(videoName) || inst.url == videoName) {
+        if (inst.source.endsWith(videoName) || inst.source == videoName) {
           result.add(inst);
         }
       }
     }
     return result;
+  }
+
+  // completion status
+  bool isVideoCompleted(String videoName) {
+    return completedVideos.contains(videoName);
+  }
+
+  void toggleVideoCompleted(String videoName) {
+    if (completedVideos.contains(videoName)) {
+      completedVideos.remove(videoName);
+    } else {
+      completedVideos.add(videoName);
+    }
+    notifyListeners();
+    _saveProgress();
+  }
+
+  void setVideoCompleted(String videoName, bool completed) {
+    if (completed) {
+      completedVideos.add(videoName);
+    } else {
+      completedVideos.remove(videoName);
+    }
+    notifyListeners();
+    _saveProgress();
   }
 }

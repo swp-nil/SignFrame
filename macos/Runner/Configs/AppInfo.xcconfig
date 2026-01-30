@@ -8,7 +8,7 @@
 PRODUCT_NAME = SignFrame
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.signframe
+PRODUCT_BUNDLE_IDENTIFIER = io.github.swp_nil.signframe
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.

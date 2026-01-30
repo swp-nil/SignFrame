@@ -1,16 +1,50 @@
-# signframe
+# SignFrame
 
-A new Flutter project.
+A Flutter desktop app for annotating sign language videos with frame markers.
 
-## Getting Started
+> **Note:** This is a personal tool built for my own workflow. It may not be actively maintained or suitable for general use.
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+- Browse and open folders of video files (.mp4, .mov, .avi, .mkv)
+- Play videos with playback speed control
+- Set start/end markers to define annotation segments
+- Auto-extract gloss names from filenames (`hello_001.mp4` → gloss "hello")
+- Track completion status per video
+- Save annotations as JSON
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Usage
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter clean
+flutter pub get
+flutter run -d windows
+```
+
+Open a folder containing videos, play a video, set start/end markers, and click "Add Instance" to create annotations.
+
+## Annotation Format
+
+Annotations are saved as `annotations.json` in the selected folder:
+
+```json
+[
+  {
+    "gloss": "hello",
+    "instances": [
+      {
+        "fps": 30.0,
+        "frame_start": 10,
+        "frame_end": 45,
+        "start_ms": 333,
+        "end_ms": 1500,
+        "instance_id": 1,
+        "url": "hello_001.mp4",
+        "video_id": "hello_001_001"
+      }
+    ]
+  }
+]
+```
+---
+Icon can be found here - [Sign language icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/sign-language)
