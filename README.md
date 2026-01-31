@@ -21,8 +21,6 @@ flutter pub get
 flutter run -d windows
 ```
 
-Open a folder containing videos, play a video, set start/end markers, and click "Add Instance" to create annotations.
-
 ## Annotation Format
 
 Annotations are saved as `annotations.json` in the selected folder:

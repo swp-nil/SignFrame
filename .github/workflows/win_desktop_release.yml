@@ -1,0 +1,52 @@
+name: Windows Desktop Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+      
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+      
+      - name: Clean project
+        run: flutter clean
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Analyze project
+        run: flutter analyze --no-fatal-warnings
+      
+      - name: Build Windows app
+        run: flutter build windows --release
+      
+      - name: Create portable zip
+        run: |
+          cd build/windows/x64/runner/Release
+          Compress-Archive -Path * -DestinationPath ../../../../../SignFrame_${{ github.ref_name }}.zip
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: SignFrame_${{ github.ref_name }}.zip
+          generate_release_notes: true
+          body: |
+            ## Installation
+            1. Download the zip file
+            2. Extract to a folder
+            3. Run `signframe.exe`
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
