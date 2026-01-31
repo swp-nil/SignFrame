@@ -164,7 +164,7 @@ class HomeScreen extends StatelessWidget {
     ProjectState state,
     ColorScheme colorScheme,
   ) {
-    // Group videos by gloss
+    // group videos by gloss
     final Map<String, List<dynamic>> glossGroups = {};
     for (final video in state.videos) {
       final gloss = _extractGloss(video.name);
@@ -172,7 +172,7 @@ class HomeScreen extends StatelessWidget {
       glossGroups[gloss]!.add(video);
     }
 
-    // Sort glosses alphabetically
+    // sort glosses alphabetically
     final sortedGlosses = glossGroups.keys.toList()..sort();
 
     return Column(

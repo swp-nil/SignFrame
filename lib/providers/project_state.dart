@@ -30,6 +30,10 @@ class ProjectState extends ChangeNotifier {
 
   void setFolderPath(String path) {
     currentFolderPath = path;
+    // Clear old data before loading new folder
+    annotations.clear();
+    completedVideos.clear();
+    videos = [];
     _saveLastFolder(path);
     _scanFolder();
     _loadAnnotations();
