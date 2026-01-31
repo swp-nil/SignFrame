@@ -13,6 +13,14 @@ A Flutter desktop app for annotating sign language videos with frame markers.
 - Track completion status per video
 - Save annotations as JSON
 
+## Expected Filename Format
+
+Videos should be named as `gloss_signerId.mp4` where signer ID is numeric:
+- `hello_001.mp4` → gloss: `hello` (signer ID: `001`)
+- `thank_you_002.mp4` → gloss: `thank_you` (signer ID: `002`)
+- `my_file_name.mp4` → gloss: `my_file_name` (no numeric ID, uses full name)
+- `wave.mp4` → gloss: `wave`
+
 ## Usage
 
 ```bash
