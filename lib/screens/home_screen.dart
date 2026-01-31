@@ -273,21 +273,70 @@ class HomeScreen extends StatelessWidget {
         ),
         // Grouped video list
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: sortedGlosses.length,
-            itemBuilder: (context, index) {
-              final gloss = sortedGlosses[index];
-              final videos = glossGroups[gloss]!;
-              return _buildGlossGroup(
-                context,
-                state,
-                colorScheme,
-                gloss,
-                videos,
-              );
-            },
-          ),
+          child: state.videos.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.videocam_off_outlined,
+                        size: 64,
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No videos found',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '＼（〇_ｏ）／',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'This folder doesn\'t contain any video files',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      OutlinedButton.icon(
+                        onPressed: () => _pickFolder(context),
+                        icon: const Icon(Icons.folder_open, size: 18),
+                        label: const Text('Choose Another Folder'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colorScheme.primary,
+                          side: BorderSide(
+                            color: colorScheme.primary.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: sortedGlosses.length,
+                  itemBuilder: (context, index) {
+                    final gloss = sortedGlosses[index];
+                    final videos = glossGroups[gloss]!;
+                    return _buildGlossGroup(
+                      context,
+                      state,
+                      colorScheme,
+                      gloss,
+                      videos,
+                    );
+                  },
+                ),
         ),
       ],
     );
