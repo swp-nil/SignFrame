@@ -164,6 +164,17 @@ class HomeScreen extends StatelessWidget {
     ProjectState state,
     ColorScheme colorScheme,
   ) {
+    // Group videos by gloss
+    final Map<String, List<dynamic>> glossGroups = {};
+    for (final video in state.videos) {
+      final gloss = _extractGloss(video.name);
+      glossGroups.putIfAbsent(gloss, () => []);
+      glossGroups[gloss]!.add(video);
+    }
+
+    // Sort glosses alphabetically
+    final sortedGlosses = glossGroups.keys.toList()..sort();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -226,6 +237,25 @@ class HomeScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
+                  color: colorScheme.secondary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  '${sortedGlosses.length} glosses',
+                  style: TextStyle(
+                    color: colorScheme.secondary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
                   color: colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -241,156 +271,283 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        // Video list
+        // Grouped video list
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: state.videos.length,
+            itemCount: sortedGlosses.length,
             itemBuilder: (context, index) {
-              final video = state.videos[index];
-              final instances = state.getInstancesForVideo(video.name);
-              final hasAnnotations = instances.isNotEmpty;
-              final isCompleted = state.isVideoCompleted(video.name);
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  color: const Color(0xFF161B22),
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PlayerScreen(video: video),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isCompleted
-                              ? Colors.green.withValues(alpha: 0.3)
-                              : hasAnnotations
-                              ? colorScheme.primary.withValues(alpha: 0.3)
-                              : Colors.white.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          // Video icon with status
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: isCompleted
-                                  ? Colors.green.withValues(alpha: 0.15)
-                                  : hasAnnotations
-                                  ? colorScheme.primary.withValues(alpha: 0.15)
-                                  : Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              isCompleted
-                                  ? Icons.check_circle
-                                  : hasAnnotations
-                                  ? Icons.edit_note
-                                  : Icons.movie_creation_outlined,
-                              color: isCompleted
-                                  ? Colors.green
-                                  : hasAnnotations
-                                  ? colorScheme.primary
-                                  : Colors.white54,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Video info
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  video.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                    color: isCompleted
-                                        ? Colors.white.withValues(alpha: 0.6)
-                                        : Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    if (isCompleted)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 2,
-                                        ),
-                                        margin: const EdgeInsets.only(right: 8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green.withValues(
-                                            alpha: 0.2,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'Done',
-                                          style: TextStyle(
-                                            color: Colors.green,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    if (hasAnnotations)
-                                      Text(
-                                        '${instances.length} instance${instances.length > 1 ? 's' : ''}',
-                                        style: TextStyle(
-                                          color: isCompleted
-                                              ? Colors.white.withValues(
-                                                  alpha: 0.4,
-                                                )
-                                              : colorScheme.primary,
-                                          fontSize: 12,
-                                        ),
-                                      )
-                                    else
-                                      Text(
-                                        'Not annotated',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Arrow
-                          Icon(
-                            Icons.chevron_right,
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              final gloss = sortedGlosses[index];
+              final videos = glossGroups[gloss]!;
+              return _buildGlossGroup(
+                context,
+                state,
+                colorScheme,
+                gloss,
+                videos,
               );
             },
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildGlossGroup(
+    BuildContext context,
+    ProjectState state,
+    ColorScheme colorScheme,
+    String gloss,
+    List<dynamic> videos,
+  ) {
+    // Calculate stats for this gloss group
+    int totalInstances = 0;
+    int completedCount = 0;
+    for (final video in videos) {
+      totalInstances += state.getInstancesForVideo(video.name).length;
+      if (state.isVideoCompleted(video.name)) {
+        completedCount++;
+      }
+    }
+    final allCompleted = completedCount == videos.length && completedCount > 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF161B22),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: allCompleted
+                ? Colors.green.withValues(alpha: 0.3)
+                : totalInstances > 0
+                ? colorScheme.primary.withValues(alpha: 0.2)
+                : Colors.white.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
+            childrenPadding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              bottom: 12,
+            ),
+            leading: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: allCompleted
+                    ? Colors.green.withValues(alpha: 0.15)
+                    : totalInstances > 0
+                    ? colorScheme.primary.withValues(alpha: 0.15)
+                    : Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                allCompleted
+                    ? Icons.check_circle
+                    : totalInstances > 0
+                    ? Icons.sign_language
+                    : Icons.gesture,
+                color: allCompleted
+                    ? Colors.green
+                    : totalInstances > 0
+                    ? colorScheme.primary
+                    : Colors.white54,
+                size: 22,
+              ),
+            ),
+            title: Text(
+              gloss.toUpperCase(),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: allCompleted
+                    ? Colors.white.withValues(alpha: 0.7)
+                    : Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  // Video count
+                  _buildStatChip(
+                    '${videos.length} video${videos.length > 1 ? 's' : ''}',
+                    Colors.white54,
+                    Colors.white.withValues(alpha: 0.05),
+                  ),
+                  const SizedBox(width: 8),
+                  // Instance count
+                  if (totalInstances > 0)
+                    _buildStatChip(
+                      '$totalInstances instance${totalInstances > 1 ? 's' : ''}',
+                      colorScheme.primary,
+                      colorScheme.primary.withValues(alpha: 0.15),
+                    ),
+                  const SizedBox(width: 8),
+                  // Completion status
+                  if (completedCount > 0)
+                    _buildStatChip(
+                      '$completedCount/${videos.length} done',
+                      Colors.green,
+                      Colors.green.withValues(alpha: 0.15),
+                    ),
+                ],
+              ),
+            ),
+            iconColor: Colors.white54,
+            collapsedIconColor: Colors.white54,
+            children: videos.map<Widget>((video) {
+              return _buildVideoItem(context, state, colorScheme, video);
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatChip(String text, Color textColor, Color bgColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoItem(
+    BuildContext context,
+    ProjectState state,
+    ColorScheme colorScheme,
+    dynamic video,
+  ) {
+    final instances = state.getInstancesForVideo(video.name);
+    final hasAnnotations = instances.isNotEmpty;
+    final isCompleted = state.isVideoCompleted(video.name);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Material(
+        color: const Color(0xFF21262D),
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => PlayerScreen(video: video)),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isCompleted
+                    ? Colors.green.withValues(alpha: 0.3)
+                    : hasAnnotations
+                    ? colorScheme.primary.withValues(alpha: 0.2)
+                    : Colors.transparent,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Status icon
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isCompleted
+                        ? Colors.green.withValues(alpha: 0.15)
+                        : hasAnnotations
+                        ? colorScheme.primary.withValues(alpha: 0.15)
+                        : Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    isCompleted
+                        ? Icons.check_circle
+                        : hasAnnotations
+                        ? Icons.edit_note
+                        : Icons.movie_outlined,
+                    color: isCompleted
+                        ? Colors.green
+                        : hasAnnotations
+                        ? colorScheme.primary
+                        : Colors.white38,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Video name
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        video.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                          color: isCompleted
+                              ? Colors.white.withValues(alpha: 0.5)
+                              : Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      if (hasAnnotations)
+                        Text(
+                          '${instances.length} instance${instances.length > 1 ? 's' : ''}',
+                          style: TextStyle(
+                            color: isCompleted
+                                ? Colors.white.withValues(alpha: 0.3)
+                                : colorScheme.primary.withValues(alpha: 0.8),
+                            fontSize: 11,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Arrow
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.white.withValues(alpha: 0.3),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _extractGloss(String filename) {
+    // Remove extension
+    final name = filename.replaceAll(
+      RegExp(r'\.(mp4|mov|avi|mkv)$', caseSensitive: false),
+      '',
+    );
+    // Split by '_' and remove last part (signer ID)
+    final parts = name.split('_');
+    if (parts.length > 1) {
+      return parts.sublist(0, parts.length - 1).join('_');
+    }
+    return name;
   }
 }
