@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/project_state.dart';
 import 'player_screen.dart';
@@ -55,7 +56,18 @@ class HomeScreen extends StatelessWidget {
                 style: TextButton.styleFrom(foregroundColor: Colors.white70),
               ),
             ),
-          const SizedBox(width: 8),
+          // GitHub link - subtle
+          IconButton(
+            onPressed: () =>
+                launchUrl(Uri.parse('https://github.com/swp-nil/SignFrame')),
+            icon: Icon(
+              Icons.code,
+              size: 20,
+              color: Colors.white.withValues(alpha: 0.4),
+            ),
+            tooltip: 'View on GitHub',
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: state.isLoading

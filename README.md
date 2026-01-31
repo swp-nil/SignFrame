@@ -6,7 +6,7 @@ A Flutter desktop app for annotating sign language videos with frame markers.
 
 ## Features
 
-- Browse and open folders of video files (.mp4, .mov, .avi, .mkv)
+- Browse and open folders of video files
 - Play videos with playback speed control
 - Set start/end markers to define annotation segments
 - Auto-extract gloss names from filenames (`hello_001.mp4` → gloss "hello")
@@ -39,7 +39,7 @@ Annotations are saved as `annotations.json` in the selected folder:
         "start_ms": 333,
         "end_ms": 1500,
         "instance_id": 1,
-        "url": "hello_001.mp4",
+        "source": "hello_001.mp4",
         "video_id": "hello_001_001"
       }
     ]
@@ -48,3 +48,8 @@ Annotations are saved as `annotations.json` in the selected folder:
 ```
 ---
 Icon can be found here - [Sign language icons created by Freepik - Flaticon](https://www.flaticon.com/free-icons/sign-language)
+
+---
+
+
+*Why spend 1 hour doing something manually when you can waste 5 hours trying to automate it?*
