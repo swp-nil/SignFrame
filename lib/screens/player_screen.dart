@@ -1061,7 +1061,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
     final parts = name.split('_');
     if (parts.length > 1) {
-      return parts.sublist(0, parts.length - 1).join('_');
+      final lastPart = parts.last;
+      // Check if last part is numeric with optional version suffix (e.g., "001", "001v2")
+      if (RegExp(r'^\d+(v\d+)?$', caseSensitive: false).hasMatch(lastPart)) {
+        return parts.sublist(0, parts.length - 1).join('_');
+      }
     }
     return name;
   }

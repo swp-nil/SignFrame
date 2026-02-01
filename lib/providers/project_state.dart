@@ -183,8 +183,8 @@ class ProjectState extends ChangeNotifier {
     final parts = name.split('_');
     if (parts.length > 1) {
       final lastPart = parts.last;
-      // check if last part is numeric
-      if (RegExp(r'^\d+$').hasMatch(lastPart)) {
+      // check if last part is numeric with optional version suffix (e.g., "001", "001v2")
+      if (RegExp(r'^\d+(v\d+)?$', caseSensitive: false).hasMatch(lastPart)) {
         return parts.sublist(0, parts.length - 1).join('_');
       }
     }

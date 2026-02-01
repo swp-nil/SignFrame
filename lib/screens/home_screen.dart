@@ -604,12 +604,13 @@ class HomeScreen extends StatelessWidget {
       RegExp(r'\.(mp4|mov|avi|mkv)$', caseSensitive: false),
       '',
     );
-    // Split by '_' and remove last part only if it's numeric (signer ID)
+    // Split by '_' and remove last part if it's a signer ID (with optional version suffix)
+    // Matches: "001", "42", "001v2", "001_v3", etc.
     final parts = name.split('_');
     if (parts.length > 1) {
       final lastPart = parts.last;
-      // Check if last part is numeric (e.g., "001", "42")
-      if (RegExp(r'^\d+$').hasMatch(lastPart)) {
+      // Check if last part is numeric with optional version suffix (e.g., "001", "42", "001v2")
+      if (RegExp(r'^\d+(v\d+)?$', caseSensitive: false).hasMatch(lastPart)) {
         return parts.sublist(0, parts.length - 1).join('_');
       }
     }
