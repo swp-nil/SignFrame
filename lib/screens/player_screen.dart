@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 
 import '../models/annotation_model.dart';
@@ -135,7 +136,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                _extractGloss(widget.video.name),
+                ProjectState.extractGloss(widget.video.name),
                 style: TextStyle(
                   color: colorScheme.primary,
                   fontSize: 12,
@@ -1054,21 +1055,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
   }
 
-  String _extractGloss(String filename) {
-    final name = filename.replaceAll(
-      RegExp(r'\.(mp4|mov|avi|mkv)$', caseSensitive: false),
-      '',
-    );
-    final parts = name.split('_');
-    if (parts.length > 1) {
-      final lastPart = parts.last;
-      // Check if last part is numeric with optional version suffix (e.g., "001", "001v2")
-      if (RegExp(r'^\d+(v\d+)?$', caseSensitive: false).hasMatch(lastPart)) {
-        return parts.sublist(0, parts.length - 1).join('_');
-      }
-    }
-    return name;
-  }
+
 
   void _addInstance() {
     final state = context.read<ProjectState>();
@@ -1083,9 +1070,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       nextId = maxId + 1;
     }
 
-    final fileBaseName = widget.video.name
-        .replaceAll('.mp4', '')
-        .replaceAll('.mov', '');
+    final fileBaseName = p.basenameWithoutExtension(widget.video.name);
     final videoId = "${fileBaseName}_${nextId.toString().padLeft(3, '0')}";
 
     final startFrame = (_startMarker!.inMilliseconds / 1000 * _fps).round();

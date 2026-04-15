@@ -28,17 +28,17 @@ class ProjectState extends ChangeNotifier {
     }
   }
 
-  void setFolderPath(String path) {
+  Future<void> setFolderPath(String path) async {
     currentFolderPath = path;
     // Clear old data before loading new folder
     annotations.clear();
     completedVideos.clear();
     videos = [];
-    _saveLastFolder(path);
-    _scanFolder();
-    _loadAnnotations();
-    _loadProgress();
-    notifyListeners();
+    notifyListeners(); // immediately show loading state
+    await _saveLastFolder(path);
+    await _scanFolder();
+    await _loadAnnotations();
+    await _loadProgress();
   }
 
   Future<void> _saveLastFolder(String path) async {
@@ -135,7 +135,7 @@ class ProjectState extends ChangeNotifier {
     final file = File(p.join(currentFolderPath!, 'annotations.json'));
     final jsonList = annotations.values.map((e) => e.toJson()).toList();
     await file.writeAsString(
-      const JsonEncoder.withIndent('  ').convert(jsonList),
+      const JsonEncoder.withIndent('  ').convert({'glosses': jsonList}),
     );
   }
 
@@ -152,7 +152,7 @@ class ProjectState extends ChangeNotifier {
   }
 
   void addInstance(String videoName, Instance instance) {
-    String gloss = _extractGloss(videoName);
+    String gloss = extractGloss(videoName);
 
     if (!annotations.containsKey(gloss)) {
       annotations[gloss] = GlossData(gloss: gloss, instances: []);
@@ -164,7 +164,7 @@ class ProjectState extends ChangeNotifier {
   }
 
   void removeInstance(String videoName, Instance instance) {
-    String gloss = _extractGloss(videoName);
+    String gloss = extractGloss(videoName);
     if (annotations.containsKey(gloss)) {
       annotations[gloss]!.instances.removeWhere(
         (i) => i.videoId == instance.videoId,
@@ -177,7 +177,14 @@ class ProjectState extends ChangeNotifier {
     }
   }
 
-  String _extractGloss(String filename) {
+  /// Extracts the gloss name from a video filename.
+  ///
+  /// Strips the extension and removes a trailing numeric signer ID segment
+  /// (with optional version suffix) separated by underscore.
+  ///   "hello_001.mp4"   → "hello"
+  ///   "thank_you_002v3.avi" → "thank_you"
+  ///   "wave.mp4"        → "wave"
+  static String extractGloss(String filename) {
     final name = p.basenameWithoutExtension(filename);
 
     final parts = name.split('_');

@@ -179,7 +179,7 @@ class HomeScreen extends StatelessWidget {
     // group videos by gloss
     final Map<String, List<dynamic>> glossGroups = {};
     for (final video in state.videos) {
-      final gloss = _extractGloss(video.name);
+      final gloss = ProjectState.extractGloss(video.name);
       glossGroups.putIfAbsent(gloss, () => []);
       glossGroups[gloss]!.add(video);
     }
@@ -598,22 +598,4 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  String _extractGloss(String filename) {
-    // Remove extension
-    final name = filename.replaceAll(
-      RegExp(r'\.(mp4|mov|avi|mkv)$', caseSensitive: false),
-      '',
-    );
-    // Split by '_' and remove last part if it's a signer ID (with optional version suffix)
-    // Matches: "001", "42", "001v2", "001_v3", etc.
-    final parts = name.split('_');
-    if (parts.length > 1) {
-      final lastPart = parts.last;
-      // Check if last part is numeric with optional version suffix (e.g., "001", "42", "001v2")
-      if (RegExp(r'^\d+(v\d+)?$', caseSensitive: false).hasMatch(lastPart)) {
-        return parts.sublist(0, parts.length - 1).join('_');
-      }
-    }
-    return name;
-  }
 }
