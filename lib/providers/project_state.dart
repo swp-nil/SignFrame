@@ -199,12 +199,11 @@ class ProjectState extends ChangeNotifier {
   }
 
   List<Instance> getInstancesForVideo(String videoName) {
-    //yeah this should be fineeee :p
+    final basename = p.basename(videoName);
     final List<Instance> result = [];
     for (var glossData in annotations.values) {
       for (var inst in glossData.instances) {
-        // loose match
-        if (inst.source.endsWith(videoName) || inst.source == videoName) {
+        if (p.basename(inst.source) == basename) {
           result.add(inst);
         }
       }
