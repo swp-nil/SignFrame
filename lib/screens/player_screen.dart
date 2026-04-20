@@ -702,7 +702,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
         // Skip back
         _buildControlButton(
           icon: Icons.replay_5,
-          onPressed: () => _player.seek(position - const Duration(seconds: 1)),
+          onPressed: () {
+            final target = position - const Duration(seconds: 1);
+            _player.seek(target < Duration.zero ? Duration.zero : target);
+          },
           tooltip: 'Back 1s',
         ),
         const SizedBox(width: 12),
@@ -733,7 +736,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
         // Skip forward
         _buildControlButton(
           icon: Icons.forward_5,
-          onPressed: () => _player.seek(position + const Duration(seconds: 1)),
+          onPressed: () {
+            final duration = _player.state.duration;
+            final target = position + const Duration(seconds: 1);
+            _player.seek(target > duration ? duration : target);
+          },
           tooltip: 'Forward 1s',
         ),
         const SizedBox(width: 24),
