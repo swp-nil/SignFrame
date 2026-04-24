@@ -10,6 +10,7 @@ import '../models/annotation_model.dart';
 import '../models/video_metadata.dart';
 import '../providers/project_state.dart';
 import '../theme/app_colors.dart';
+import '../utils/shortcuts.dart';
 import '../widgets/instance_painter.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -125,11 +126,80 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
+  void _skipBack() {
+    final target = _player.state.position - const Duration(seconds: 1);
+    _player.seek(target < Duration.zero ? Duration.zero : target);
+  }
+
+  void _skipForward() {
+    final duration = _player.state.duration;
+    final target = _player.state.position + const Duration(seconds: 1);
+    _player.seek(target > duration ? duration : target);
+  }
+
+  void _markStartAction() {
+    if (_isAnnotating) return;
+    setState(() {
+      _isAnnotating = true;
+      _startMarker = _player.state.position;
+      _savedRate = _player.state.rate;
+      _player.setRate(_slowMoSpeed);
+    });
+  }
+
+  void _markEndAction() {
+    if (_isAnnotating && _startMarker != null) {
+      final endPos = _player.state.position;
+      if (endPos > _startMarker!) {
+        setState(() {
+          _endMarker = endPos;
+        });
+        _addInstance();
+        setState(() {
+          _startMarker = null;
+          _endMarker = null;
+          _isAnnotating = false;
+        });
+        _player.setRate(_savedRate);
+      }
+    }
+  }
+
+  void _cancelAnnotationAction() {
+    if (_isAnnotating) {
+      setState(() {
+        _startMarker = null;
+        _endMarker = null;
+        _isAnnotating = false;
+      });
+      _player.setRate(_savedRate);
+    }
+  }
+
+  void _saveAnnotationsAction() {
+    context.read<ProjectState>().saveAnnotations();
+    _showSidebarMessage('Annotations saved');
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
+    return Shortcuts(
+      shortcuts: appShortcuts,
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          PlayPauseIntent: CallbackAction<PlayPauseIntent>(onInvoke: (_) => _player.playOrPause()),
+          SkipBackIntent: CallbackAction<SkipBackIntent>(onInvoke: (_) => _skipBack()),
+          SkipForwardIntent: CallbackAction<SkipForwardIntent>(onInvoke: (_) => _skipForward()),
+          MarkStartIntent: CallbackAction<MarkStartIntent>(onInvoke: (_) => _markStartAction()),
+          MarkEndIntent: CallbackAction<MarkEndIntent>(onInvoke: (_) => _markEndAction()),
+          CancelAnnotationIntent: CallbackAction<CancelAnnotationIntent>(onInvoke: (_) => _cancelAnnotationAction()),
+          SaveAnnotationsIntent: CallbackAction<SaveAnnotationsIntent>(onInvoke: (_) => _saveAnnotationsAction()),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
@@ -166,10 +236,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         ),
         actions: [
           TextButton.icon(
-            onPressed: () {
-              context.read<ProjectState>().saveAnnotations();
-              _showSidebarMessage('Annotations saved');
-            },
+            onPressed: _saveAnnotationsAction,
 
             icon: Icon(
               Icons.save_outlined,
@@ -261,6 +328,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
           // Sidebar: Instances
           _buildSidebar(colorScheme),
         ],
+      ),
+    ),
+        ),
       ),
     );
   }
@@ -711,11 +781,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
       children: [
         // Skip back
         _buildControlButton(
-          icon: Icons.replay_5,
-          onPressed: () {
-            final target = position - const Duration(seconds: 1);
-            _player.seek(target < Duration.zero ? Duration.zero : target);
-          },
+          icon: Icons.fast_rewind,
+          onPressed: _skipBack,
           tooltip: 'Back 1s',
         ),
         const SizedBox(width: 12),
@@ -745,12 +812,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
         const SizedBox(width: 12),
         // Skip forward
         _buildControlButton(
-          icon: Icons.forward_5,
-          onPressed: () {
-            final duration = _player.state.duration;
-            final target = position + const Duration(seconds: 1);
-            _player.seek(target > duration ? duration : target);
-          },
+          icon: Icons.fast_forward,
+          onPressed: _skipForward,
           tooltip: 'Forward 1s',
         ),
         const SizedBox(width: 24),
@@ -941,15 +1004,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           child: InkWell(
-            onTap: () {
-              setState(() {
-                _startMarker = position;
-                _endMarker = null;
-                _isAnnotating = true;
-                _savedRate = _player.state.rate;
-              });
-              _player.setRate(_slowMoSpeed);
-            },
+            onTap: _markStartAction,
             borderRadius: BorderRadius.circular(10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -984,14 +1039,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
               color: Colors.transparent,
               borderRadius: BorderRadius.circular(10),
               child: InkWell(
-                onTap: () {
-                  setState(() {
-                    _startMarker = null;
-                    _endMarker = null;
-                    _isAnnotating = false;
-                  });
-                  _player.setRate(_savedRate);
-                },
+                onTap: _cancelAnnotationAction,
                 borderRadius: BorderRadius.circular(10),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1030,23 +1078,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(10),
                 child: InkWell(
-                  onTap: () {
-                    final endPos = position;
-                    if (_startMarker != null && endPos > _startMarker!) {
-                      setState(() {
-                        _endMarker = endPos;
-                      });
-                      _addInstance();
-                      setState(() {
-                        _startMarker = null;
-                        _endMarker = null;
-                        _isAnnotating = false;
-                      });
-                      _player.setRate(_savedRate);
-                    } else {
-                      _showSidebarMessage('End must be after start');
-                    }
-                  },
+                  onTap: _markEndAction,
                   borderRadius: BorderRadius.circular(10),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1071,8 +1103,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
       );
     }
   }
-
-
 
   void _addInstance() {
     final state = context.read<ProjectState>();
