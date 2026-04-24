@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -35,6 +37,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
   String? _sidebarMessage;
   Instance? _playingInstance;
 
+  StreamSubscription? _tracksSub;
+  StreamSubscription? _positionSub;
+  StreamSubscription? _completedSub;
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +52,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Future<void> _initializeVideo() async {
     await _player.open(Media(widget.video.path));
 
-    _player.stream.tracks.listen((tracks) {
+    _tracksSub = _player.stream.tracks.listen((tracks) {
       if (!mounted) return;
       final videoTrack = tracks.video.firstOrNull;
       if (videoTrack != null) {
@@ -75,7 +81,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     });
 
     // listen for position changes to stop at instance end
-    _player.stream.position.listen((position) {
+    _positionSub = _player.stream.position.listen((position) {
       if (_playingInstance != null) {
         final endMs = _playingInstance!.endMs;
         if (position.inMilliseconds >= endMs) {
@@ -85,7 +91,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       }
     });
 
-    _player.stream.completed.listen((completed) {
+    _completedSub = _player.stream.completed.listen((completed) {
       if (completed) {
         setState(() => _playingInstance = null);
       }
@@ -94,6 +100,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
+    _tracksSub?.cancel();
+    _positionSub?.cancel();
+    _completedSub?.cancel();
     _player.dispose();
     super.dispose();
   }
