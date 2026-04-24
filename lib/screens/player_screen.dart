@@ -1096,11 +1096,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
     state.addInstance(widget.video.name, newInstance);
 
-    setState(() {
-      _startMarker = null;
-      _endMarker = null;
-    });
-
     _showSidebarMessage('Instance #${nextId.toString().padLeft(3, '0')} added');
   }
 
