@@ -3,6 +3,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'providers/project_state.dart';
 import 'screens/home_screen.dart';
+import 'theme/app_colors.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,17 +26,17 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           brightness: Brightness.dark,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF00D9FF), // Vibrant cyan
+            seedColor: AppColors.primary,
             brightness: Brightness.dark,
-            surface: const Color(0xFF0D1117), // GitHub-like dark
-            primary: const Color(0xFF00D9FF),
-            secondary: const Color(0xFF7C3AED), // Purple accent
-            error: const Color(0xFFEF4444),
+            surface: AppColors.background,
+            primary: AppColors.primary,
+            secondary: AppColors.secondary,
+            error: AppColors.error,
           ),
-          scaffoldBackgroundColor: const Color(0xFF0D1117),
+          scaffoldBackgroundColor: AppColors.background,
           useMaterial3: true,
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF161B22),
+            backgroundColor: AppColors.surface,
             elevation: 0,
             centerTitle: false,
             titleTextStyle: TextStyle(
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
           cardTheme: CardThemeData(
-            color: const Color(0xFF161B22),
+            color: AppColors.surface,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00D9FF),
+              backgroundColor: AppColors.primary,
               foregroundColor: Colors.black,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -71,10 +72,10 @@ class MyApp extends StatelessWidget {
             style: IconButton.styleFrom(foregroundColor: Colors.white70),
           ),
           sliderTheme: SliderThemeData(
-            activeTrackColor: const Color(0xFF00D9FF),
+            activeTrackColor: AppColors.primary,
             inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
-            thumbColor: const Color(0xFF00D9FF),
-            overlayColor: const Color(0xFF00D9FF).withValues(alpha: 0.2),
+            thumbColor: AppColors.primary,
+            overlayColor: AppColors.primary.withValues(alpha: 0.2),
             trackHeight: 4,
           ),
           dividerTheme: DividerThemeData(
@@ -82,7 +83,7 @@ class MyApp extends StatelessWidget {
             thickness: 1,
           ),
           snackBarTheme: SnackBarThemeData(
-            backgroundColor: const Color(0xFF21262D),
+            backgroundColor: AppColors.surfaceElevated,
             contentTextStyle: const TextStyle(color: Colors.white),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

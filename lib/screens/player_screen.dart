@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../models/annotation_model.dart';
 import '../models/video_metadata.dart';
 import '../providers/project_state.dart';
+import '../theme/app_colors.dart';
 import '../widgets/instance_painter.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -120,9 +121,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF161B22),
+        backgroundColor: AppColors.surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -259,7 +260,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return Container(
       width: 320,
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: AppColors.surface,
         border: Border(
           left: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
         ),
@@ -358,7 +359,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Material(
-                        color: const Color(0xFF21262D),
+                        color: AppColors.surfaceElevated,
                         borderRadius: BorderRadius.circular(10),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(10),
@@ -576,7 +577,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
@@ -776,7 +777,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   // Speed buttons
                   Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF21262D),
+                      color: AppColors.surfaceElevated,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     margin: const EdgeInsets.all(4),
@@ -876,7 +877,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 child: DropdownButton<double>(
                   value: _slowMoSpeed,
                   isDense: true,
-                  dropdownColor: const Color(0xFF21262D),
+                  dropdownColor: AppColors.surfaceElevated,
                   icon: Icon(
                     Icons.arrow_drop_down,
                     color: _isAnnotating ? Colors.orange : Colors.white54,

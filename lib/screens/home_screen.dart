@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/project_state.dart';
+import '../theme/app_colors.dart';
 import 'player_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -194,7 +195,7 @@ class HomeScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF161B22),
+            color: AppColors.surface,
             border: Border(
               bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
@@ -376,7 +377,7 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF161B22),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: allCompleted
@@ -505,7 +506,7 @@ class HomeScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Material(
-        color: const Color(0xFF21262D),
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
