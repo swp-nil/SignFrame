@@ -167,7 +167,9 @@ class ProjectState extends ChangeNotifier {
     String gloss = extractGloss(videoName);
     if (annotations.containsKey(gloss)) {
       annotations[gloss]!.instances.removeWhere(
-        (i) => i.videoId == instance.videoId,
+        (i) => i.source == instance.source &&
+               i.instanceId == instance.instanceId &&
+               i.startMs == instance.startMs,
       );
       if (annotations[gloss]!.instances.isEmpty) {
         annotations.remove(gloss);
