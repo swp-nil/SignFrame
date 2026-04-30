@@ -19,7 +19,7 @@ class ProjectState extends ChangeNotifier {
 
   static const _lastFolderKey = 'last_folder_path';
 
-  /// init and load last opened folder
+  // init and load last opened folder
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final savedPath = prefs.getString(_lastFolderKey);
@@ -167,9 +167,10 @@ class ProjectState extends ChangeNotifier {
     String gloss = extractGloss(videoName);
     if (annotations.containsKey(gloss)) {
       annotations[gloss]!.instances.removeWhere(
-        (i) => i.source == instance.source &&
-               i.instanceId == instance.instanceId &&
-               i.startMs == instance.startMs,
+        (i) =>
+            i.source == instance.source &&
+            i.instanceId == instance.instanceId &&
+            i.startMs == instance.startMs,
       );
       if (annotations[gloss]!.instances.isEmpty) {
         annotations.remove(gloss);
