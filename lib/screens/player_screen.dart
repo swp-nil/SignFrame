@@ -7,9 +7,9 @@ import '../providers/player_session_provider.dart';
 import '../providers/project_state.dart';
 import '../theme/app_colors.dart';
 import '../utils/shortcuts.dart';
-import '../widgets/instance_painter.dart';
 import '../widgets/player/annotation_controls.dart';
 import '../widgets/player/playback_controls.dart';
+import '../widgets/player/timeline_slider.dart';
 import '../widgets/player/video_viewport.dart';
 
 class PlayerScreen extends StatelessWidget {
@@ -201,7 +201,7 @@ class _PlayerScreenContent extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildTimeline(context, session, position, duration, colorScheme),
+              TimelineSlider(position: position, duration: duration),
               const SizedBox(height: 20),
               const PlaybackControls(),
               const SizedBox(height: 16),
@@ -212,95 +212,6 @@ class _PlayerScreenContent extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildTimeline(
-    BuildContext context,
-    PlayerSessionProvider session,
-    Duration position,
-    Duration duration,
-    ColorScheme colorScheme,
-  ) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              session.formatDuration(position),
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontSize: 13,
-                fontFamily: 'monospace',
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              session.formatDuration(duration),
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 13,
-                fontFamily: 'monospace',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Consumer<ProjectState>(
-          builder: (context, state, _) {
-            final instances = state.getInstancesForVideo(session.video.name);
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Stack(
-                  alignment: Alignment.centerLeft,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: CustomPaint(
-                        size: Size(constraints.maxWidth - 24, 8),
-                        painter: InstancePainter(
-                          instances: instances,
-                          videoDuration: duration,
-                          fps: session.fps,
-                        ),
-                      ),
-                    ),
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 8,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 8,
-                        ),
-                        overlayShape: const RoundSliderOverlayShape(
-                          overlayRadius: 16,
-                        ),
-                        activeTrackColor: colorScheme.primary.withValues(
-                          alpha: 0.5,
-                        ),
-                        inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
-                      ),
-                      child: Slider(
-                        value: position.inMilliseconds.toDouble().clamp(
-                          0,
-                          duration.inMilliseconds.toDouble(),
-                        ),
-                        min: 0,
-                        max: duration.inMilliseconds.toDouble(),
-                        onChanged: (value) {
-                          session.player.seek(
-                            Duration(milliseconds: value.toInt()),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-      ],
     );
   }
 
