@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/player_session_provider.dart';
 import '../../providers/project_state.dart';
-import '../instance_painter.dart';
+import 'instance_painter.dart';
 
 // timeline scrubber with instance overlay and time labels
 class TimelineSlider extends StatelessWidget {

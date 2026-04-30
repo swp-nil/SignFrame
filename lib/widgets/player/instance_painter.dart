@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/annotation_model.dart';
+import '../../models/annotation_model.dart';
 
 class InstancePainter extends CustomPainter {
   final double fps;
